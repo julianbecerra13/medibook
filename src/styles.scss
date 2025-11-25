@@ -1,0 +1,75 @@
+@use '@angular/material' as mat;
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  background: #f3f4f6;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+// Custom scrollbar
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
+}
+
+// Material form field adjustments
+.mat-mdc-form-field {
+  width: 100%;
+}
+
+// Material button adjustments
+.mat-mdc-raised-button {
+  border-radius: 0.5rem !important;
+}
+
+// Material card adjustments
+.mat-mdc-card {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+}
+
+// Stepper custom styles
+.mat-step-header {
+  padding: 1rem !important;
+}
+
+.mat-step-icon {
+  background-color: #6366f1 !important;
+}
+
+.mat-step-icon-selected {
+  background-color: #6366f1 !important;
+}
+
+// Table styles
+.mat-mdc-table {
+  background: transparent !important;
+}
+
+.mat-mdc-header-row {
+  background: #f9fafb !important;
+}
+
+.mat-mdc-row:hover {
+  background: #f9fafb !important;
+}
