@@ -6,8 +6,10 @@ html, body {
 }
 
 body {
-  font-family: Roboto, "Helvetica Neue", sans-serif;
-  background: #f3f4f6;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #f8fafc;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 * {
@@ -16,21 +18,21 @@ body {
 
 // Custom scrollbar
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 4px;
+  background: #cbd5e1;
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #a1a1a1;
+  background: #94a3b8;
 }
 
 // Material form field adjustments
@@ -39,13 +41,27 @@ body {
 }
 
 // Material button adjustments
-.mat-mdc-raised-button {
-  border-radius: 0.5rem !important;
+.mat-mdc-raised-button,
+.mat-mdc-flat-button {
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+}
+
+// Primary color override to teal
+.mat-mdc-raised-button.mat-primary,
+.mat-mdc-flat-button.mat-primary {
+  background-color: #0d9488 !important;
+}
+
+.mat-mdc-raised-button.mat-primary:hover,
+.mat-mdc-flat-button.mat-primary:hover {
+  background-color: #0f766e !important;
 }
 
 // Material card adjustments
 .mat-mdc-card {
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
 }
 
 // Stepper custom styles
@@ -54,11 +70,24 @@ body {
 }
 
 .mat-step-icon {
-  background-color: #6366f1 !important;
+  background-color: #0d9488 !important;
 }
 
-.mat-step-icon-selected {
-  background-color: #6366f1 !important;
+.mat-step-icon-selected,
+.mat-step-icon-state-done {
+  background-color: #0d9488 !important;
+}
+
+// Slide toggle
+.mat-mdc-slide-toggle.mat-accent {
+  --mdc-switch-selected-track-color: #0d9488;
+  --mdc-switch-selected-handle-color: #0d9488;
+  --mdc-switch-selected-hover-track-color: #0f766e;
+  --mdc-switch-selected-hover-handle-color: #0f766e;
+  --mdc-switch-selected-focus-track-color: #0d9488;
+  --mdc-switch-selected-focus-handle-color: #0d9488;
+  --mdc-switch-selected-pressed-track-color: #0d9488;
+  --mdc-switch-selected-pressed-handle-color: #0d9488;
 }
 
 // Table styles
@@ -67,9 +96,41 @@ body {
 }
 
 .mat-mdc-header-row {
-  background: #f9fafb !important;
+  background: #f8fafc !important;
 }
 
 .mat-mdc-row:hover {
-  background: #f9fafb !important;
+  background: #f1f5f9 !important;
+}
+
+// Select dropdown
+.mat-mdc-select-panel {
+  border-radius: 12px !important;
+}
+
+// Input fields
+.mat-mdc-form-field-subscript-wrapper {
+  display: none;
+}
+
+.mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-notched-outline__leading,
+.mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-notched-outline__notch,
+.mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-notched-outline__trailing {
+  border-color: #e2e8f0 !important;
+}
+
+.mdc-text-field--outlined:not(.mdc-text-field--disabled):not(.mdc-text-field--focused):hover .mdc-notched-outline .mdc-notched-outline__leading,
+.mdc-text-field--outlined:not(.mdc-text-field--disabled):not(.mdc-text-field--focused):hover .mdc-notched-outline .mdc-notched-outline__notch,
+.mdc-text-field--outlined:not(.mdc-text-field--disabled):not(.mdc-text-field--focused):hover .mdc-notched-outline .mdc-notched-outline__trailing {
+  border-color: #0d9488 !important;
+}
+
+.mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--focused .mdc-notched-outline__leading,
+.mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--focused .mdc-notched-outline__notch,
+.mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--focused .mdc-notched-outline__trailing {
+  border-color: #0d9488 !important;
+}
+
+.mat-mdc-form-field.mat-focused .mat-mdc-floating-label {
+  color: #0d9488 !important;
 }

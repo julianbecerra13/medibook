@@ -2,7 +2,6 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
 import { BookingService } from '../services/booking.service';
 import { format, addDays, startOfWeek, addWeeks, subWeeks } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -10,156 +9,199 @@ import { es } from 'date-fns/locale';
 @Component({
   selector: 'app-calendar',
   standalone: true,
-  imports: [CommonModule, MatIconModule, MatButtonModule, MatCardModule],
+  imports: [CommonModule, MatIconModule, MatButtonModule],
   template: `
     <div class="calendar-page">
-      <div class="calendar-header">
-        <div class="header-left">
-          <h2>Calendario de Reservas</h2>
-          <p>{{ currentMonthYear }}</p>
+      <div class="page-header">
+        <div class="header-info">
+          <h1>Calendario</h1>
+          <p>Vista semanal de citas programadas</p>
         </div>
-        <div class="header-actions">
-          <button mat-icon-button (click)="previousWeek()">
-            <mat-icon>chevron_left</mat-icon>
-          </button>
-          <button mat-stroked-button (click)="goToToday()">Hoy</button>
-          <button mat-icon-button (click)="nextWeek()">
-            <mat-icon>chevron_right</mat-icon>
-          </button>
-        </div>
-      </div>
-
-      <div class="calendar-grid">
-        <!-- Time Column -->
-        <div class="time-column">
-          <div class="time-header"></div>
-          @for (hour of hours; track hour) {
-            <div class="time-slot">{{ hour }}:00</div>
-          }
-        </div>
-
-        <!-- Day Columns -->
-        @for (day of weekDays(); track day.date) {
-          <div class="day-column" [class.today]="isToday(day.date)">
-            <div class="day-header" [class.today]="isToday(day.date)">
-              <span class="day-name">{{ day.dayName }}</span>
-              <span class="day-number">{{ day.dayNumber }}</span>
-            </div>
-            <div class="day-slots">
-              @for (hour of hours; track hour) {
-                <div class="hour-slot">
-                  @for (booking of getBookingsForSlot(day.date, hour); track booking.id) {
-                    <div class="booking-block"
-                         [style.height.px]="booking.duration"
-                         [style.background]="getServiceColor(booking.serviceId)">
-                      <span class="booking-time">{{ booking.time }}</span>
-                      <span class="booking-service">{{ booking.serviceName }}</span>
-                      <span class="booking-client">{{ booking.clientName }}</span>
-                    </div>
-                  }
-                </div>
-              }
-            </div>
+        <div class="header-controls">
+          <div class="nav-controls">
+            <button mat-icon-button (click)="previousWeek()" class="nav-btn">
+              <mat-icon>chevron_left</mat-icon>
+            </button>
+            <button mat-stroked-button (click)="goToToday()" class="today-btn">
+              <mat-icon>today</mat-icon>
+              Hoy
+            </button>
+            <button mat-icon-button (click)="nextWeek()" class="nav-btn">
+              <mat-icon>chevron_right</mat-icon>
+            </button>
           </div>
-        }
+          <span class="current-period">{{ currentMonthYear }}</span>
+        </div>
       </div>
 
-      <!-- Selected Day Details -->
-      <mat-card class="day-details">
-        <mat-card-header>
-          <mat-card-title>Reservas del dia</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          @if (selectedDayBookings().length > 0) {
-            <div class="bookings-list">
-              @for (booking of selectedDayBookings(); track booking.id) {
-                <div class="booking-detail">
-                  <div class="booking-time-block" [style.background]="getServiceColor(booking.serviceId)">
-                    {{ booking.time }}
+      <div class="calendar-container">
+        <div class="calendar-grid">
+          <!-- Time Column -->
+          <div class="time-column">
+            <div class="time-header"></div>
+            @for (hour of hours; track hour) {
+              <div class="time-slot">
+                <span>{{ hour }}:00</span>
+              </div>
+            }
+          </div>
+
+          <!-- Day Columns -->
+          @for (day of weekDays(); track day.date) {
+            <div class="day-column" [class.today]="isToday(day.date)">
+              <div class="day-header" [class.today]="isToday(day.date)">
+                <span class="day-name">{{ day.dayName }}</span>
+                <span class="day-number">{{ day.dayNumber }}</span>
+              </div>
+              <div class="day-body">
+                @for (hour of hours; track hour) {
+                  <div class="hour-cell">
+                    @for (booking of getBookingsForSlot(day.date, hour); track booking.id) {
+                      <div class="booking-card"
+                           [style.height.px]="booking.duration"
+                           [style.borderLeftColor]="getServiceColor(booking.serviceId)">
+                        <div class="booking-time">{{ booking.time }}</div>
+                        <div class="booking-service">{{ booking.serviceName }}</div>
+                        <div class="booking-client">{{ booking.clientName }}</div>
+                      </div>
+                    }
                   </div>
-                  <div class="booking-info">
-                    <span class="service">{{ booking.serviceName }}</span>
-                    <span class="client">{{ booking.clientName }}</span>
-                    <span class="duration">{{ booking.duration }} min</span>
-                  </div>
-                  <span [class]="'status ' + booking.status">
-                    {{ getStatusLabel(booking.status) }}
-                  </span>
-                </div>
-              }
-            </div>
-          } @else {
-            <div class="no-bookings">
-              <mat-icon>event_available</mat-icon>
-              <span>No hay reservas para hoy</span>
+                }
+              </div>
             </div>
           }
-        </mat-card-content>
-      </mat-card>
+        </div>
+      </div>
+
+      <!-- Today's Appointments Panel -->
+      <div class="today-panel">
+        <div class="panel-header">
+          <mat-icon>event_note</mat-icon>
+          <h3>Citas de Hoy</h3>
+        </div>
+        <div class="panel-content">
+          @if (todayBookings().length > 0) {
+            @for (booking of todayBookings(); track booking.id) {
+              <div class="today-item">
+                <div class="item-time" [style.background]="getServiceColor(booking.serviceId)">
+                  {{ booking.time }}
+                </div>
+                <div class="item-details">
+                  <span class="item-service">{{ booking.serviceName }}</span>
+                  <span class="item-client">{{ booking.clientName }}</span>
+                </div>
+                <span [class]="'item-status ' + booking.status">
+                  {{ getStatusLabel(booking.status) }}
+                </span>
+              </div>
+            }
+          } @else {
+            <div class="empty-panel">
+              <mat-icon>event_available</mat-icon>
+              <span>No hay citas para hoy</span>
+            </div>
+          }
+        </div>
+      </div>
     </div>
   `,
   styles: [`
     .calendar-page {
       padding: 1.5rem;
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 1.5rem;
+      grid-template-rows: auto 1fr;
     }
 
-    .calendar-header {
+    .page-header {
+      grid-column: 1 / -1;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 1.5rem;
     }
 
-    .header-left h2 {
+    .header-info h1 {
       font-size: 1.5rem;
-      font-weight: 600;
+      font-weight: 700;
+      color: #0f172a;
       margin: 0;
     }
 
-    .header-left p {
-      color: #6b7280;
+    .header-info p {
+      color: #64748b;
       margin: 0;
-      text-transform: capitalize;
+      font-size: 0.9rem;
     }
 
-    .header-actions {
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .nav-controls {
       display: flex;
       align-items: center;
       gap: 0.5rem;
     }
 
+    .nav-btn {
+      background: white;
+      border: 1px solid #e2e8f0;
+    }
+
+    .today-btn {
+      border-color: #0d9488 !important;
+      color: #0d9488 !important;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .current-period {
+      font-weight: 600;
+      color: #0f172a;
+      text-transform: capitalize;
+      font-size: 1.1rem;
+    }
+
+    .calendar-container {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+    }
+
     .calendar-grid {
       display: grid;
-      grid-template-columns: 60px repeat(7, 1fr);
-      background: white;
-      border-radius: 1rem;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      overflow: hidden;
-      margin-bottom: 1.5rem;
+      grid-template-columns: 70px repeat(7, 1fr);
     }
 
     .time-column {
-      border-right: 1px solid #e5e7eb;
+      border-right: 1px solid #e2e8f0;
     }
 
     .time-header {
-      height: 60px;
-      border-bottom: 1px solid #e5e7eb;
+      height: 70px;
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
     }
 
     .time-slot {
-      height: 60px;
+      height: 70px;
       display: flex;
       align-items: flex-start;
       justify-content: center;
-      padding-top: 0.25rem;
+      padding-top: 0.5rem;
       font-size: 0.75rem;
-      color: #6b7280;
-      border-bottom: 1px solid #f3f4f6;
+      color: #64748b;
+      font-weight: 500;
+      border-bottom: 1px solid #f1f5f9;
     }
 
     .day-column {
-      border-right: 1px solid #e5e7eb;
+      border-right: 1px solid #e2e8f0;
     }
 
     .day-column:last-child {
@@ -167,153 +209,201 @@ import { es } from 'date-fns/locale';
     }
 
     .day-header {
-      height: 60px;
+      height: 70px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      border-bottom: 1px solid #e5e7eb;
-      background: #f9fafb;
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
     }
 
     .day-header.today {
-      background: #6366f1;
-      color: white;
+      background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
     }
 
     .day-name {
       font-size: 0.75rem;
       text-transform: uppercase;
-    }
-
-    .day-number {
-      font-size: 1.25rem;
-      font-weight: 600;
-    }
-
-    .day-slots {
-      position: relative;
-    }
-
-    .hour-slot {
-      height: 60px;
-      border-bottom: 1px solid #f3f4f6;
-      position: relative;
-    }
-
-    .booking-block {
-      position: absolute;
-      left: 2px;
-      right: 2px;
-      border-radius: 0.25rem;
-      padding: 0.25rem 0.5rem;
-      color: white;
-      font-size: 0.7rem;
-      overflow: hidden;
-      z-index: 1;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .booking-time {
-      font-weight: 600;
-    }
-
-    .booking-service {
+      color: #64748b;
       font-weight: 500;
     }
 
+    .day-header.today .day-name {
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .day-number {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .day-header.today .day-number {
+      color: white;
+    }
+
+    .day-body {
+      position: relative;
+    }
+
+    .hour-cell {
+      height: 70px;
+      border-bottom: 1px solid #f1f5f9;
+      position: relative;
+    }
+
+    .booking-card {
+      position: absolute;
+      left: 4px;
+      right: 4px;
+      background: white;
+      border-radius: 8px;
+      padding: 0.5rem;
+      border-left: 4px solid;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+      z-index: 1;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .booking-card:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    }
+
+    .booking-time {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .booking-service {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #334155;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
     .booking-client {
-      opacity: 0.8;
+      font-size: 0.65rem;
+      color: #64748b;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    mat-card {
-      border-radius: 1rem !important;
+    .today-panel {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      align-self: start;
     }
 
-    mat-card-header {
-      padding: 1rem 1.5rem !important;
-      border-bottom: 1px solid #f3f4f6;
-    }
-
-    mat-card-title {
-      font-size: 1rem !important;
-      font-weight: 600 !important;
-      margin: 0 !important;
-    }
-
-    mat-card-content {
-      padding: 1rem 1.5rem !important;
-    }
-
-    .bookings-list {
+    .panel-header {
       display: flex;
-      flex-direction: column;
+      align-items: center;
       gap: 0.75rem;
+      padding: 1.25rem;
+      border-bottom: 1px solid #f1f5f9;
     }
 
-    .booking-detail {
+    .panel-header mat-icon {
+      color: #0d9488;
+    }
+
+    .panel-header h3 {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #0f172a;
+    }
+
+    .panel-content {
+      padding: 1rem;
+    }
+
+    .today-item {
       display: flex;
       align-items: center;
       gap: 1rem;
-      padding: 0.75rem;
-      background: #f9fafb;
-      border-radius: 0.5rem;
+      padding: 0.875rem;
+      background: #f8fafc;
+      border-radius: 10px;
+      margin-bottom: 0.75rem;
     }
 
-    .booking-time-block {
-      padding: 0.5rem 0.75rem;
-      border-radius: 0.5rem;
+    .today-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .item-time {
+      padding: 0.375rem 0.625rem;
+      border-radius: 6px;
       color: white;
-      font-weight: 600;
-      font-size: 0.9rem;
+      font-weight: 700;
+      font-size: 0.8rem;
     }
 
-    .booking-info {
+    .item-details {
       flex: 1;
       display: flex;
       flex-direction: column;
     }
 
-    .booking-info .service {
-      font-weight: 500;
+    .item-service {
+      font-weight: 600;
+      color: #0f172a;
+      font-size: 0.875rem;
     }
 
-    .booking-info .client {
-      font-size: 0.8rem;
-      color: #6b7280;
-    }
-
-    .booking-info .duration {
+    .item-client {
       font-size: 0.75rem;
-      color: #9ca3af;
+      color: #64748b;
     }
 
-    .status {
-      padding: 0.25rem 0.75rem;
-      border-radius: 9999px;
-      font-size: 0.75rem;
-      font-weight: 500;
+    .item-status {
+      font-size: 0.65rem;
+      font-weight: 600;
+      padding: 0.25rem 0.625rem;
+      border-radius: 20px;
     }
 
-    .status.pending { background: #fef3c7; color: #92400e; }
-    .status.confirmed { background: #dcfce7; color: #166534; }
-    .status.completed { background: #dbeafe; color: #1e40af; }
-    .status.cancelled { background: #fee2e2; color: #991b1b; }
+    .item-status.pending { background: #fef3c7; color: #d97706; }
+    .item-status.confirmed { background: #ccfbf1; color: #0d9488; }
+    .item-status.completed { background: #dbeafe; color: #2563eb; }
+    .item-status.cancelled { background: #fee2e2; color: #dc2626; }
 
-    .no-bookings {
+    .empty-panel {
       display: flex;
       flex-direction: column;
       align-items: center;
       padding: 2rem;
-      color: #9ca3af;
+      color: #94a3b8;
     }
 
-    .no-bookings mat-icon {
+    .empty-panel mat-icon {
       font-size: 2.5rem;
       width: 2.5rem;
       height: 2.5rem;
       margin-bottom: 0.5rem;
+    }
+
+    @media (max-width: 1200px) {
+      .calendar-page {
+        grid-template-columns: 1fr;
+      }
+
+      .today-panel {
+        grid-row: 2;
+      }
+
+      .calendar-container {
+        grid-row: 3;
+      }
     }
   `]
 })
@@ -329,7 +419,7 @@ export class CalendarComponent {
 
   weekDays = signal(this.generateWeekDays());
 
-  selectedDayBookings = signal(this.bookingService.getBookingsByDate(format(new Date(), 'yyyy-MM-dd')));
+  todayBookings = signal(this.bookingService.getBookingsByDate(format(new Date(), 'yyyy-MM-dd')));
 
   private generateWeekDays() {
     const start = startOfWeek(this.currentDate(), { weekStartsOn: 1 });
@@ -372,7 +462,7 @@ export class CalendarComponent {
 
   getServiceColor(serviceId: string): string {
     const service = this.bookingService.getServiceById(serviceId);
-    return service?.color || '#6366f1';
+    return service?.color || '#0d9488';
   }
 
   getStatusLabel(status: string): string {

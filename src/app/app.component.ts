@@ -22,11 +22,12 @@ import { HeaderComponent } from './components/layout/header.component';
     .app-layout {
       display: flex;
       min-height: 100vh;
-      background: #f3f4f6;
+      background: #f8fafc;
     }
 
     .main-container {
       flex: 1;
+      margin-left: 280px;
       display: flex;
       flex-direction: column;
       overflow: hidden;
